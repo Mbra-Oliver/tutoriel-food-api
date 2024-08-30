@@ -4,14 +4,13 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Food;
-use App\Models\SubCategory;
 use App\Models\Restaurant;
-use App\Models\CloudFile;
+use App\Models\SubCategorie;
 
 class FoodSeeder extends Seeder
 {
     /**
-     * Run the database seeds. 
+     * Run the database seeds.
      *
      * @return void
      */
@@ -88,9 +87,9 @@ class FoodSeeder extends Seeder
             $food->default_image = $foodData['default_image'];
             $food->status = 'IN_STOCK';
 
-            $subCategory = SubCategory::inRandomOrder()->first();
+            $subCategory = SubCategorie::inRandomOrder()->first();
             $restaurant = Restaurant::inRandomOrder()->first();
-            $cloudFile = CloudFile::inRandomOrder()->first();
+
 
             if ($subCategory) {
                 $food->sub_category_id = $subCategory->id;
