@@ -100,7 +100,7 @@ class FoodController extends Controller
             return response()->json([
                 'status_message'=>'Nourriture trouvée !',
                 'status_code'=>200,
-                'data'=>$food->foodSubCategorie->category
+                'data'=>$food
             ], 200);
 
         }catch(Exception $exception){

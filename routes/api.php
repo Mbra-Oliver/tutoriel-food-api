@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\FoodController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
+
+Route::post('/user/create',[UserController::class,'register']);
 
 
 //Route pour les catégories d'aliment
