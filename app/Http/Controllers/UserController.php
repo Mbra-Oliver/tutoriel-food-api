@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -24,11 +25,7 @@ class UserController extends Controller
             ]);
 
             if($validator->fails()){
-                return response()->json([
-                    'status_code'=>422,
-                    'status_message'=>'Données invalide',
-                    'data'=>null
-                ],422);
+                $this->errorResponse($validator->errors(),422);
             }
 
             $user = User::create([
@@ -39,27 +36,64 @@ class UserController extends Controller
                 'password'=>Hash::make($request->password)
             ]);
 
-            $token = $user->createToken('FOOD_API_USER_TOKEN')->plainTextToken;
+            $token = $user->createToken(env('APP_BACKEND_TOKEN_KEY'))->plainTextToken;
             DB::commit();
 
-            return response()->json([
-                'status_code'=>201,
-                'status_message'=>'Le compte de l\'utilisateur à été créer',
-                'data'=>[
+           return $this->successResponse([
                     'token'=>$token,
                     'user'=>$user
-                ]
-            ],201);
+                ],'Le compte de l\'utilisateur à été créer',201);
 
         }catch(Exception $e){
             DB::rollBack();
-             return response()->json([
-                'status_code'=>500,
-                'status_message'=>$e->getMessage(),
-                'data'=>'SERVER ERROR'
-            ],500);
+            $this->errorResponse($e->getMessage(),500);
         }
     }
 
-    public function login(Request $request){}
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required',
+        ], [
+            'email.exists' => 'Cette adresse n\'est associée à aucun compte',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors(), 422);
+        }
+
+        $credentials = $validator->validated();
+
+        if (!Auth::attempt($credentials)) {
+            return $this->errorResponse('Mot de passe ou email invalide !', 401);
+        }
+
+        $user = Auth::user();
+        $token = $user->createToken(env('APP_BACKEND_TOKEN_KEY'))->plainTextToken;
+
+        return $this->successResponse([
+            'token' => $token,
+            'user' => $user,
+        ], 'Vous êtes connecté');
+    }
+
+
+private function errorResponse($message, $statusCode)
+{
+    return response()->json([
+        'status_code' => $statusCode,
+        'status_message' => $message,
+        'data' => null,
+    ], $statusCode);
+}
+
+private function successResponse($data, $message, $statusCode = 200)
+{
+    return response()->json([
+        'status_code' => $statusCode,
+        'status_message' => $message,
+        'data' => $data,
+    ], $statusCode);
+}
 }

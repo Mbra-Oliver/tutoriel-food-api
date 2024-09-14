@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Food extends Model
 {
     use HasFactory;
+    protected $table='foods';
 
 
     public function restaurant()
